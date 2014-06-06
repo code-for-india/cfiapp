@@ -75,6 +75,20 @@ CREATE TABLE IF NOT EXISTS `projects` (
   `members` varchar(2048) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `NGO`
+--
+
+CREATE TABLE IF NOT EXISTS `ngodb` (
+  `org_id` bigint NOT NULL AUTO_INCREMENT,
+  `org_poc_email` VARCHAR(1024) NOT NULL, 
+  `org_poc_name` VARCHAR(1024), 
+  `org_poc_phone` VARCHAR(15), 
+  PRIMARY KEY( org_id )
+);
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
