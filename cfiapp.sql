@@ -58,22 +58,174 @@ CREATE TABLE IF NOT EXISTS `profiles` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
+-- -- mysql> show tables;
+-- +-----------------------+
+-- | Tables_in_cfi         |
+-- +-----------------------+
+-- | admindb               |
+-- | ngodb                 |
+-- | profiles              |
+-- | project_members_db    |
+-- | project_milestones_db |
+-- | project_skills_db     |
+-- | projectdb             |
+-- +-----------------------+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `Admins`
+--
+
+CREATE TABLE admindb(
+  `admin_id` BIGINT NOT NULL AUTO_INCREMENT, 
+  `admin_email` VARCHAR(1024) NOT NULL, 
+  `admin_name` VARCHAR(1024) NOT NULL, 
+  `admin_phone` VARCHAR(16), 
+  PRIMARY KEY(admin_id)
+);
+
+-- describe admindb;
+-- +-------------+---------------+------+-----+---------+----------------+
+-- | Field       | Type          | Null | Key | Default | Extra          |
+-- +-------------+---------------+------+-----+---------+----------------+
+-- | admin_id    | bigint(20)    | NO   | PRI | NULL    | auto_increment |
+-- | admin_email | varchar(1024) | NO   |     | NULL    |                |
+-- | admin_name  | varchar(1024) | NO   |     | NULL    |                |
+-- | admin_phone | varchar(16)   | YES  |     | NULL    |                |
+-- +-------------+---------------+------+-----+---------+----------------+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `NGO`
+--
+
+CREATE TABLE IF NOT EXISTS `ngodb` (
+  `org_id` BIGINT NOT NULL AUTO_INCREMENT,
+  `org_poc_email` VARCHAR(1024) NOT NULL, 
+  `org_poc_name` VARCHAR(1024), 
+  `org_poc_phone` VARCHAR(15), 
+  PRIMARY KEY( org_id )
+);
+
+-- mysql> describe ngodb;
+-- +---------------+---------------+------+-----+---------+----------------+
+-- | Field         | Type          | Null | Key | Default | Extra          |
+-- +---------------+---------------+------+-----+---------+----------------+
+-- | org_id        | bigint(20)    | NO   | PRI | NULL    | auto_increment |
+-- | org_poc_email | varchar(1000) | NO   |     | NULL    |                |
+-- | org_poc_name  | varchar(1000) | YES  |     | NULL    |                |
+-- | org_poc_phone | varchar(15)   | YES  |     | NULL    |                |
+-- +---------------+---------------+------+-----+---------+----------------+
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `projects`
 --
 
-CREATE TABLE IF NOT EXISTS `projects` (
-  `id` bigint(20) NOT NULL,
-  `name` varchar(1024) NOT NULL,
-  `desc` varchar(5120) NOT NULL,
-  `milestones` varchar(5120) NOT NULL,
-  `cfi_poc` varchar(1024) NOT NULL,
-  `ngo_partner` varchar(1024) NOT NULL,
-  `ngo_poc` varchar(1024) NOT NULL,
-  `members` varchar(2048) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+CREATE TABLE IF NOT EXISTS `projectdb` (
+  `project_id` BIGINT NOT NULL AUTO_INCREMENT, 
+  `org_id` BIGINT NOT NULL, 
+  `project_name` VARCHAR(1024) NOT NULL, 
+  `project_description` VARCHAR(5120) NOT NULL, 
+  `org_poc_email` VARCHAR(1024), 
+  `org_poc_name` VARCHAR(1024), 
+  `org_poc_phone` VARCHAR(16), 
+  `cfi_poc_id` BIGINT NOT NULL, 
+  `creation_ts` TIMESTAMP, 
+  `approval_status` ENUM('NEW', 'HOLD', 'APPROVED', 'DEFUNCT') NOT NULL, 
+  `project_status` ENUM('NONE', 'ACTIVE', 'COMPLETE'), 
+  `wiki_link` VARCHAR(1024), 
+  `github_link` VARCHAR(1024), 
+  `dashboard_link` VARCHAR(1024), 
+  PRIMARY KEY(project_id), 
+  FOREIGN KEY(org_id) REFERENCES ngodb(org_id), 
+  FOREIGN KEY(cfi_poc_id) REFERENCES admindb(admin_id)
+);
+
+-- mysql> describe projectdb;
+-- +---------------------+-----------------------------------------+------+-----+-------------------+-----------------------------+
+-- | Field               | Type                                    | Null | Key | Default           | Extra                       |
+-- +---------------------+-----------------------------------------+------+-----+-------------------+-----------------------------+
+-- | project_id          | bigint(20)                              | NO   | PRI | NULL              | auto_increment              |
+-- | org_id              | bigint(20)                              | NO   | MUL | NULL              |                             |
+-- | project_name        | varchar(1024)                           | NO   |     | NULL              |                             |
+-- | project_description | varchar(5120)                           | NO   |     | NULL              |                             |
+-- | org_poc_email       | varchar(1024)                           | YES  |     | NULL              |                             |
+-- | org_poc_name        | varchar(1024)                           | YES  |     | NULL              |                             |
+-- | org_poc_phone       | varchar(16)                             | YES  |     | NULL              |                             |
+-- | cfi_poc_id          | bigint(20)                              | NO   | MUL | NULL              |                             |
+-- | creation_ts         | timestamp                               | NO   |     | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
+-- | approval_status     | enum('NEW','HOLD','APPROVED','DEFUNCT') | NO   |     | NULL              |                             |
+-- | project_status      | enum('NONE','ACTIVE','COMPLETE')        | YES  |     | NULL              |                             |
+-- | wiki_link           | varchar(1024)                           | YES  |     | NULL              |                             |
+-- | github_link         | varchar(1024)                           | YES  |     | NULL              |                             |
+-- | dashboard_link      | varchar(1024)                           | YES  |     | NULL              |                             |
+-- +---------------------+-----------------------------------------+------+-----+-------------------+-----------------------------+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `project_milestone`
+--
+CREATE TABLE IF NOT EXISTS `project_milestones_db` (
+  `project_id` BIGINT NOT NULL, 
+  `milestone_id` BIGINT NOT NULL, 
+  `milestone_name` VARCHAR(1024) NOT NULL, 
+  `milestone_description` VARCHAR(5120) NOT NULL,
+  `duration_seconds` INT,
+  PRIMARY KEY(milestone_id),
+  FOREIGN KEY(project_id) REFERENCES projectdb(project_id)
+);
+
+-- mysql> describe project_milestones_db;
+-- +-----------------------+---------------+------+-----+---------+-------+
+-- | Field                 | Type          | Null | Key | Default | Extra |
+-- +-----------------------+---------------+------+-----+---------+-------+
+-- | milestone_id          | bigint(20)    | NO   | PRI | NULL    |       |
+-- | project_id            | bigint(20)    | NO   | MUL | NULL    |       |
+-- | milestone_name        | varchar(1024) | NO   |     | NULL    |       |
+-- | milestone_description | varchar(5120) | NO   |     | NULL    |       |
+-- | duration_seconds      | int(11)       | YES  |     | NULL    |       |
+-- +-----------------------+---------------+------+-----+---------+-------+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `project_skills`
+--
+CREATE TABLE IF NOT EXISTS `project_skills_db` (
+  `project_id` BIGINT NOT NULL, 
+  `skill` VARCHAR(1024) NOT NULL, 
+  FOREIGN KEY(project_id) REFERENCES projectdb(project_id)
+);
+
+-- mysql> describe project_skills_db;
+-- +------------+---------------+------+-----+---------+-------+
+-- | Field      | Type          | Null | Key | Default | Extra |
+-- +------------+---------------+------+-----+---------+-------+
+-- | project_id | bigint(20)    | NO   | MUL | NULL    |       |
+-- | skill      | varchar(1024) | NO   |     | NULL    |       |
+-- +------------+---------------+------+-----+---------+-------+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `project_members`
+--
+CREATE TABLE IF NOT EXISTS `project_members_db` (
+  `project_id` BIGINT NOT NULL, 
+  `member_id` BIGINT NOT NULL, 
+  FOREIGN KEY(member_id) REFERENCES profiles(id)
+);
+
+-- mysql> describe project_members_db;
+-- +------------+------------+------+-----+---------+-------+
+-- | Field      | Type       | Null | Key | Default | Extra |
+-- +------------+------------+------+-----+---------+-------+
+-- | project_id | bigint(20) | NO   |     | NULL    |       |
+-- | member_id  | bigint(20) | NO   | MUL | NULL    |       |
+-- +------------+------------+------+-----+---------+-------+
+
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
